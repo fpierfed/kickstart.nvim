@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -155,7 +155,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 0
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -616,7 +616,19 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {
+          settings = {
+            pyright = {
+              disableOrganizeImports = true,
+            },
+            python = {
+              analysis = {
+                ignore = { '*' },
+              },
+            },
+          },
+        },
+        ruff = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -709,7 +721,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'ruff_format', 'ruff_organize_imports' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -784,12 +796,12 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
           --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<Tab>'] = cmp.mapping.select_next_item(),
           --['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
@@ -838,13 +850,13 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'projekt0n/github-nvim-theme',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'github_light_default'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -897,7 +909,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'go', 'rust', 'yaml', 'toml' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -937,7 +949,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -967,3 +979,47 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- Custom Settings
+--
+-- Do not add comments on the next line!
+-- Note that we need to create autocmd so that our settings do not get
+-- overridden by other plugins loaded after this file.
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = '*',
+  callback = function()
+    vim.opt_local.formatoptions:remove { 'r', 'o' }
+    vim.cmd 'highlight ColorColumn ctermbg=0 guibg=#333333'
+  end,
+})
+
+-- Use Treesitter for code folding
+-- From: https://www.jackfranklin.co.uk/blog/code-folding-in-vim-neovim/
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.foldtext = ''
+vim.opt.foldlevel = 99
+
+-- Highlight column 80
+vim.opt.colorcolumn = '80'
+
+-- Quality of life remaps
+vim.cmd 'cnoreabbrev W! w!'
+vim.cmd 'cnoreabbrev Q! q!'
+vim.cmd 'cnoreabbrev Qall! qall!'
+vim.cmd 'cnoreabbrev Wq wq'
+vim.cmd 'cnoreabbrev Wa wa'
+vim.cmd 'cnoreabbrev wQ wq'
+vim.cmd 'cnoreabbrev WQ wq'
+vim.cmd 'cnoreabbrev W w'
+vim.cmd 'cnoreabbrev Q q'
+vim.cmd 'cnoreabbrev Qall qall'
+
+-- bufferline
+vim.opt.termguicolors = true
+require('bufferline').setup {
+  options = {
+    diagnostics = 'nvim_lsp',
+    numbers = 'buffer_id',
+  },
+}
