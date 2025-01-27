@@ -618,9 +618,21 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        pyright = {
+        -- pyright = {
+        --   settings = {
+        --     pyright = {
+        --       disableOrganizeImports = true,
+        --     },
+        --     python = {
+        --       analysis = {
+        --         ignore = { '*' },
+        --       },
+        --     },
+        --   },
+        -- },
+        basedpyright = {
           settings = {
-            pyright = {
+            basedpyright = {
               disableOrganizeImports = true,
             },
             python = {
@@ -806,7 +818,8 @@ require('lazy').setup({
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
           --['<CR>'] = cmp.mapping.confirm { select = true },
-          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<Tab>'] = cmp.mapping.confirm { select = true },
+          --['<Tab>'] = cmp.mapping.select_next_item(),
           --['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
@@ -914,7 +927,24 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'go', 'rust', 'yaml', 'toml' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'python',
+        'go',
+        'rust',
+        'yaml',
+        'toml',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1028,3 +1058,5 @@ require('bufferline').setup {
     numbers = 'buffer_id',
   },
 }
+-- views can only be fully collapsed with the global statusline
+vim.opt.laststatus = 3
