@@ -22,63 +22,28 @@ return {
   {
     'yetone/avante.nvim',
     event = 'VeryLazy',
-    lazy = false,
-    version = false, -- set this if you want to always pull the latest change
+    version = false, -- Never set this value to "*"! Never!
+    -- Highlight groups overrides
+    highlights = {
+      diff = {
+        current = 'LightAvanteCurrentGroup',
+        incoming = 'LightAvanteCurrentGroup',
+      },
+    },
     opts = {
-      -- provider = 'gemini',
       provider = 'deepseek',
-      -- provider = 'ollama',
       gemini = {
-        -- model = 'gemini-exp-1206',
         model = 'gemini-2.0-flash-thinking-exp-01-21',
-        max_tokens = 2000000,
+        max_tokens = 8192,
       },
       vendors = {
         deepseek = {
           __inherited_from = 'openai',
           api_key_name = 'DEEPSEEK_API_KEY',
           endpoint = 'https://api.deepseek.com',
-          model = 'deepseek-coder',
-        },
-        --@type AvanteProvider
-        ollama = {
-          api_key_name = '',
-          ask = '',
-          endpoint = 'http://127.0.0.1:11434/api',
-          model = 'deepseek-r1:14b',
-          parse_curl_args = function(opts, code_opts)
-            return {
-              url = opts.endpoint .. '/chat',
-              headers = {
-                ['Accept'] = 'application/json',
-                ['Content-Type'] = 'application/json',
-              },
-              body = {
-                model = opts.model,
-                options = {
-                  num_ctx = 16384,
-                },
-                messages = require('avante.providers').copilot.parse_messages(code_opts), -- you can make your own message, but this is very advanced
-                stream = true,
-              },
-            }
-          end,
-          parse_stream_data = function(data, handler_opts)
-            -- Parse the JSON data
-            local json_data = vim.fn.json_decode(data)
-            -- Check for stream completion marker first
-            if json_data and json_data.done then
-              handler_opts.on_complete(nil) -- Properly terminate the stream
-              return
-            end
-            -- Process normal message content
-            if json_data and json_data.message and json_data.message.content then
-              -- Extract the content from the message
-              local content = json_data.message.content
-              -- Call the handler with the content
-              handler_opts.on_chunk(content)
-            end
-          end,
+          model = 'deepseek-chat',
+          -- model = 'deepseek-reasoner',
+          max_tokens = 8192,
         },
       },
     },
@@ -86,11 +51,15 @@ return {
     build = 'make',
     -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
     dependencies = {
+      'nvim-treesitter/nvim-treesitter',
       'stevearc/dressing.nvim',
       'nvim-lua/plenary.nvim',
       'MunifTanjim/nui.nvim',
       --- The below dependencies are optional,
+      'echasnovski/mini.pick', -- for file_selector provider mini.pick
+      'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
       'hrsh7th/nvim-cmp', -- autocompletion for avante commands and mentions
+      'ibhagwan/fzf-lua', -- for file_selector provider fzf
       'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
       'zbirenbaum/copilot.lua', -- for providers='copilot'
       {
@@ -119,5 +88,42 @@ return {
         ft = { 'markdown', 'Avante' },
       },
     },
+  },
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    config = function()
+      require('neo-tree').setup {
+        filesystem = {
+          commands = {
+            avante_add_files = function(state)
+              local node = state.tree:get_node()
+              local filepath = node:get_id()
+              local relative_path = require('avante.utils').relative_path(filepath)
+
+              local sidebar = require('avante').get()
+
+              local open = sidebar:is_open()
+              -- ensure avante sidebar is open
+              if not open then
+                require('avante.api').ask()
+                sidebar = require('avante').get()
+              end
+
+              sidebar.file_selector:add_selected_file(relative_path)
+
+              -- remove neo tree buffer
+              if not open then
+                sidebar.file_selector:remove_selected_file 'neo-tree filesystem [1]'
+              end
+            end,
+          },
+          window = {
+            mappings = {
+              ['oa'] = 'avante_add_files',
+            },
+          },
+        },
+      }
+    end,
   },
 }

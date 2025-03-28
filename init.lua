@@ -1061,5 +1061,17 @@ require('bufferline').setup {
 -- views can only be fully collapsed with the global statusline
 vim.opt.laststatus = 3
 
+-- Define some hoghlight groups for avante so that we can actually read diffs
+-- We then reference those in the avante config
+vim.api.nvim_set_hl(0, 'LightAvanteCurrentGroup', {
+  bg = '#FFFFFF',
+  fg = '#000000',
+  bold = true,
+})
+-- Make sure that markdown code rendering uses a light bg
+vim.api.nvim_set_hl(0, 'RenderMarkdownCode', {
+  bg = '#FFFFFF',
+})
+
 -- Plugin Setup
 require('oil').setup()
