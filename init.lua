@@ -625,6 +625,7 @@ require('lazy').setup({
         --     },
         --     python = {
         --       analysis = {
+        --         typeCheckingMode = 'off',
         --         ignore = { '*' },
         --       },
         --     },
@@ -634,9 +635,8 @@ require('lazy').setup({
           settings = {
             basedpyright = {
               disableOrganizeImports = true,
-            },
-            python = {
               analysis = {
+                typeCheckingMode = 'off',
                 ignore = { '*' },
               },
             },
@@ -1060,3 +1060,6 @@ require('bufferline').setup {
 }
 -- views can only be fully collapsed with the global statusline
 vim.opt.laststatus = 3
+
+-- Plugin Setup
+require('oil').setup()
